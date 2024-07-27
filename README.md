@@ -1,6 +1,9 @@
-https://github.com/todotxt/todo.txt
+Based on https://github.com/todotxt/todo.txt
 
-COMMANDS (SO FAR)
+Built in Delphi 11.3 (Community Edition)
+Version 0.1
+
+COMMANDS IMPLEMENTED (SO FAR)
 
 todo -i "an item to add to the todo list"
 todo -l
