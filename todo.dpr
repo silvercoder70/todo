@@ -74,7 +74,11 @@ begin
       LToDo.Delete(LArgText);
     end
     else if FindCmdLineSwitch2('t', 'touch') then
-      LToDo.Touch;
+      LToDo.Touch
+    else if FindCmdLineSwitch2('a', 'archive') then
+      LToDo.Archive
+    else if FindCmdLineSwitch2('sd', 'summary-daily') then
+      LToDo.GetSummary;
 
   except
     on E: Exception do

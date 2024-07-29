@@ -14,6 +14,7 @@ type
   private
     FDatabasePath: string;
     FDatabaseFile: string;
+    FArchiveFile: string;
     function CsvToList(AItems: string): TStringList;
   public
     class function Create: TToDoCommand; static;
@@ -22,6 +23,8 @@ type
     procedure Complete(AItems: string);
     procedure Delete(AItems: string);
     procedure Touch;
+    procedure Archive;
+    procedure GetSummary;
   end;
 
 implementation
@@ -40,6 +43,7 @@ begin
     Result.FDatabaseFile := ''
   else
     Result.FDatabaseFile := TPath.Combine(Result.FDatabasePath, 'todo.txt');
+  Result.FArchiveFile := TPath.Combine(Result.FDatabasePath, 'done.txt');
 end;
 
 function TToDoCommand.CsvToList(AItems: string): TStringList;
@@ -76,6 +80,38 @@ begin
 
   LDeleteList.Free;
   todoDb.Free;
+end;
+
+procedure TToDoCommand.GetSummary;
+
+  procedure GetCompletedItems(AFileName: string;
+                              AFromDate: TDateTime;
+                              AList: TStringList);
+  var
+    todoDb: TToDoDatabase;
+  begin
+    todoDb := TToDoDatabase.Create(AFileName, openReadOnly);
+    for var I := 0 to todoDb.Rows.Count-1 do
+    begin
+      var LItemStr := todoDb.Rows[I];
+      var LItem := TToDoItem.Create(LItemStr);
+      if LItem.Completed and (LItem.CompletedDate >= AFromDate) then
+        AList.Add(LItemStr);
+      LItem.Free;
+    end;
+    todoDb.Free;
+  end;
+
+begin
+  var D := Date;
+  var LCompletedItems := TStringList.Create;
+  GetCompletedItems(FDatabaseFile, D, LCompletedItems);
+  GetCompletedItems(FArchiveFile, D, LCompletedItems);
+  for var I := 0 to LCompletedItems.Count-1 do
+  begin
+    WriteLn(LCompletedItems[I]);
+  end;
+  LCompletedItems.Free;
 end;
 
 procedure TToDoCommand.AddItem(AItem: string);
@@ -132,6 +168,28 @@ begin
     end;
     LItem.Free;
   end;
+  todoDb.Free;
+end;
+
+procedure TToDoCommand.Archive;
+var
+  todoDb: TToDoDatabase;
+  todoArchive: TToDoDatabase;
+begin
+  todoDb := TToDoDatabase.Create(FDatabaseFile, openReadWrite);
+  todoArchive := TToDoDatabase.Create(FArchiveFile, openReadWrite);
+  for var I := todoDb.Rows.Count-1 downto 0 do
+  begin
+    var LItemStr := todoDb.Rows[I];
+    var LItem := TToDoItem.Create(LItemStr);
+    if LItem.Completed then
+    begin
+      todoArchive.Rows.Add(LItemStr);
+      todoDb.Rows.Delete(I);
+    end;
+    LItem.Free;
+  end;
+  todoArchive.Free;
   todoDb.Free;
 end;
 
