@@ -22,6 +22,7 @@ type
     procedure List(AShowAll: boolean);
     procedure Complete(AItems: string);
     procedure Delete(AItems: string);
+    procedure Sort;
     procedure Touch;
     procedure Archive;
     procedure GetSummary;
@@ -150,6 +151,16 @@ begin
   end;
   todoDb.Free;
 end;
+
+procedure TToDoCommand.Sort;
+var
+  todoDb: TToDoDatabase;
+begin
+  todoDb := TToDoDatabase.Create(FDatabaseFile, openReadWrite);
+  todoDb.Rows.Sort;
+  todoDb.Free;
+end;
+
 
 procedure TToDoCommand.Touch;
 var

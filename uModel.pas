@@ -14,17 +14,20 @@ type
     FDescription: string;
     FCompleted: boolean;
     FCompletedDate: TDateTime;
+    FPriority: Char;
     procedure SetCompleted(const Value: boolean);
     procedure SetCompletedDate(const Value: TDateTime);
     procedure SetCreatedDate(const Value: TDateTime);
     procedure SetDescription(const Value: string);
     procedure CheckCreatedDate;
+    procedure SetPriority(const Value: Char);
   public
     constructor Create; overload;
     constructor Create(AString: string); overload;
     function AsString: string;
     function IsValidCreatedDate: boolean;
     property Completed: boolean read FCompleted write SetCompleted;
+    property Priority: Char read FPriority write SetPriority;
     property CompletedDate: TDateTime read FCompletedDate write SetCompletedDate;
     property CreatedDate: TDateTime read FCreatedDate write SetCreatedDate;
     property Description: string read FDescription write SetDescription;
@@ -79,6 +82,13 @@ begin
   if FCompleted then
     WorkString := WorkString.Substring(2);
 
+  if WorkString[1] = '(' then
+  begin
+    Token := StrToken(WorkString, ' ');
+    FPriority := Token[2];
+  end;
+
+
   if WorkString[1].IsDigit then
   begin
     Token := StrToken(WorkString, ' ');
@@ -103,6 +113,7 @@ end;
 constructor TToDoItem.Create;
 begin
   FCreatedDate := 0;
+  FPriority := '-';
   FDescription := 'Empty';
   FCompleted := False;
   FCompletedDate := 0;
@@ -135,6 +146,11 @@ begin
   FDescription := Value;
 end;
 
+procedure TToDoItem.SetPriority(const Value: Char);
+begin
+  FPriority := Value;
+end;
+
 function TToDoItem.AsString: string;
 
   function DateValToStr(ADate: TDateTime): string; begin
@@ -145,6 +161,8 @@ begin
   Result := '';
   if self.Completed then
     Result := Result + 'x ';
+  if self.FPriority <> '-' then
+    Result := Result + '(' + self.FPriority + ') ';
   if self.FCompletedDate > 1 then
     Result := Result + DateValToStr(self.FCompletedDate) + ' ';
   if self.FCreatedDate > 1 then
